@@ -9,7 +9,3 @@
 #define __tiling__ __attribute__((annotate("__tiling__")))
 #define GM_ADDR __gm__ uint8_t *
 
-
-int shape_a[] = {8};
-int shape_b[] = {16};
-#define GET_SHAPE(x) shape_##x

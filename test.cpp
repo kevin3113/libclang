@@ -7,10 +7,14 @@
 
 
 int main(int argc, char *argv[]) {
+  const char **opts = (const char **)malloc((argc + 2) * sizeof(const char *));
+  opts[0] = "-include";
+  opts[1] = "pre_def.h";
+  memcpy(opts + 2, &argv[1], (argc - 1) * sizeof(const char *));
   CXIndex index = clang_createIndex(0, 0); //Create index
   CXTranslationUnit unit = clang_parseTranslationUnit(
     index,
-    "add_custom.cpp", &argv[1], argc - 1,
+    "add_custom.cpp", opts, argc + 1,
     nullptr, 0,
     CXTranslationUnit_None); //Parse "structs.cpp"
 
@@ -38,7 +42,8 @@ int main(int argc, char *argv[]) {
   cursor,
   [](CXCursor current_cursor, CXCursor parent, CXClientData client_data){
     print_cursor(current_cursor);
-    write_src(*(int *)client_data, current_cursor);
+    //write_src(*(int *)client_data, current_cursor);
+    write_src_without_system_header(*(int *)client_data, current_cursor);
     CXType cursor_type = clang_getCursorType(current_cursor);
 
     CXString type_kind_spelling = clang_getTypeKindSpelling(cursor_type.kind);
@@ -69,8 +74,8 @@ int main(int argc, char *argv[]) {
         printf("===================================================================\n");
     }
     //print_cursor(current_cursor);
-    return CXChildVisit_Recurse;
-    //return CXChildVisit_Continue;
+    //return CXChildVisit_Recurse;
+    return CXChildVisit_Continue;
   },
   &fd
   );
