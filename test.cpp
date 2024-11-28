@@ -1,20 +1,33 @@
 #include <clang-c/Index.h>
 #include <iostream>
-#include "func.h"
+#include <functional>
 #include <string.h>
+#include "func.h"
 #include "attr.h"
 #include "src.h"
+#include "opers.h"
 
+void help(const char *app)
+{
+    printf("%s <src_file> <oper> [options]\n", app);
+    print_options();
+}
 
 int main(int argc, char *argv[]) {
-  const char **opts = (const char **)malloc((argc + 2) * sizeof(const char *));
+  if (argc < 3)
+  {
+    help(argv[0]);
+    return 1;
+  }
+  int option_cnt = argc - 3 + 2;
+  const char **opts = (const char **)malloc(option_cnt * sizeof(const char *));
   opts[0] = "-include";
   opts[1] = "pre_def.h";
-  memcpy(opts + 2, &argv[1], (argc - 1) * sizeof(const char *));
+  memcpy(opts + 2, &argv[3], (argc - 3) * sizeof(const char *));
   CXIndex index = clang_createIndex(0, 0); //Create index
   CXTranslationUnit unit = clang_parseTranslationUnit(
     index,
-    "add_custom.cpp", opts, argc + 1,
+    argv[1], opts, option_cnt,
     nullptr, 0,
     CXTranslationUnit_None); //Parse "structs.cpp"
 
@@ -23,6 +36,14 @@ int main(int argc, char *argv[]) {
     return 0;
   }
   CXCursor cursor = clang_getTranslationUnitCursor(unit); //Obtain a cursor at the root of the translation unit
+  int ret = execute(argv[2], cursor);
+  if (ret)
+  {
+    printf("oper not correct!\n");
+    print_options();
+    return 1;
+  }
+  return 0;
   clang_visitChildren(cursor,
     [](CXCursor current_cursor, CXCursor parent, CXClientData client_data) {
         AddTilingAttr(current_cursor, parent);

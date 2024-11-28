@@ -17,3 +17,9 @@ int add_custom(int a, int b, int c)
     return res;
 }
 
+template<int x, typename T>
+int add(int y, T &res)
+{
+    res = (T)y;
+    return x + y;
+}
